@@ -2,4 +2,10 @@
 <resources>
 
     <style name="Theme.MasterMeme" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.MasterMemeSplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/dark_black</item>
+        <item name="postSplashScreenTheme">@style/Theme.MasterMeme</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/master_meme_logo</item>
+    </style>
 </resources>
