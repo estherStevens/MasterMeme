@@ -10,6 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import stevens.software.mastermeme.ui.theme.MasterMemeTheme
@@ -22,12 +25,12 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         setContent {
             MasterMemeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    Greeting(
+//                        name = "Android",
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
+//                }
             }
         }
     }
@@ -48,3 +51,10 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
+val manropeFontFamily = FontFamily(
+    Font(resId = R.font.manrope_light, weight = FontWeight.Light),
+    Font(resId = R.font.manrope_regular, weight = FontWeight.Normal),
+    Font(resId = R.font.manrope_medium, weight = FontWeight.Medium),
+    Font(resId = R.font.manrope_semibold, weight = FontWeight.SemiBold)
+)
