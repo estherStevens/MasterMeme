@@ -1,4 +1,4 @@
-package stevens.software.mastermeme
+package stevens.software.mastermeme.memes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,11 +44,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.androidx.compose.koinViewModel
+import stevens.software.mastermeme.R
+import stevens.software.mastermeme.manropeFontFamily
 import stevens.software.mastermeme.ui.theme.MasterMemeTheme
+
+@Composable
+fun MyMemesScreen(
+    viewModel: MyMemesViewModel = koinViewModel()){
+
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+
+    MyMemes(
+        memeTemplates = uiState.value.memeTemplates
+    )
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyMemes() {
+fun MyMemes(
+    memeTemplates: List<Int>
+) {
     val bottomSheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
     Scaffold(
@@ -107,7 +125,8 @@ fun MyMemes() {
                     if(showBottomSheet) {
                         BottomSheetModal(
                             bottomSheetState = bottomSheetState,
-                            onShowBottomSheet = { showBottomSheet = it }
+                            onShowBottomSheet = { showBottomSheet = it },
+                            memeTemplates = memeTemplates
                         )
                     }
                 }
@@ -119,7 +138,8 @@ fun MyMemes() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetModal(bottomSheetState: SheetState,
-                     onShowBottomSheet: (Boolean) -> Unit){
+                     onShowBottomSheet: (Boolean) -> Unit,
+                     memeTemplates: List<Int>){
     ModalBottomSheet(
         onDismissRequest = { onShowBottomSheet(false) },
         sheetState = bottomSheetState,
@@ -149,7 +169,7 @@ fun BottomSheetModal(bottomSheetState: SheetState,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(16.dp)
         ) {
-            items(memes) { drawable ->
+            items(memeTemplates) { drawable ->
                 Box(
                     modifier = Modifier
                         .height(176.dp)
@@ -158,9 +178,8 @@ fun BottomSheetModal(bottomSheetState: SheetState,
                     contentAlignment = Alignment.Center) {
                     Image(
                         painter = painterResource(drawable),
-//                        modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                         contentDescription = null,
-                    contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop
                     )
                 }
 
@@ -168,6 +187,7 @@ fun BottomSheetModal(bottomSheetState: SheetState,
         }
     }
 }
+
 @Composable
 fun EmptyState(modifier: Modifier) {
     Box(
@@ -199,7 +219,9 @@ fun EmptyState(modifier: Modifier) {
 @Composable
 fun MyMemesPreview() {
     MasterMemeTheme {
-        MyMemes()
+        MyMemes(
+            memeTemplates = listOf()
+        )
     }
 }
 

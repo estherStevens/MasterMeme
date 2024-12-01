@@ -5,6 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
+import stevens.software.mastermeme.memes.MyMemes
+import stevens.software.mastermeme.memes.MyMemesScreen
 
 @Serializable
 object Memes
@@ -15,7 +17,7 @@ fun MainNavController() {
 
     NavHost(navController = navController, startDestination = Memes) {
       composable<Memes>{
-          MyMemes()
+          MyMemesScreen()
       }
     }
 }
