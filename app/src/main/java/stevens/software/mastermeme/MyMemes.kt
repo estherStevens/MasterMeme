@@ -11,17 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,6 +41,8 @@ import stevens.software.mastermeme.ui.theme.MasterMemeTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyMemes() {
+    val bottomSheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,8 +71,7 @@ fun MyMemes() {
                 Column {
                     EmptyState(modifier = Modifier.weight(1f))
 
-                    Box(
-                        modifier = Modifier
+                    Box(modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 32.dp, end = 16.dp),
                         contentAlignment = Alignment.BottomEnd
@@ -81,9 +82,8 @@ fun MyMemes() {
                                 colorResource(R.color.dark_purple)
                             )
                         )
-
                         IconButton(
-                            onClick = {},
+                            onClick = { showBottomSheet = true },
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(brush)
@@ -93,6 +93,32 @@ fun MyMemes() {
                                 tint = Color.Black,
                                 contentDescription = null
                             )
+                        }
+                    }
+
+                    if(showBottomSheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showBottomSheet = false },
+                            sheetState = bottomSheetState,
+                            containerColor = colorResource(R.color.dark_grey),
+                            ) {
+                            Text(
+                                text = stringResource(R.string.my_memes_bottom_sheet_title),
+                                fontSize = 16.sp,
+                                fontFamily = manropeFontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colorResource(R.color.light_grey),
+                                modifier = Modifier.padding(top = 16.dp, start = 16.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.my_memes_bottom_sheet_subtitle),
+                                fontSize = 12.sp,
+                                fontFamily = manropeFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                color = colorResource(R.color.light_grey),
+                                modifier = Modifier.padding(top = 16.dp, start = 16.dp)
+                            )
+                            Spacer(Modifier.size(42.dp))
                         }
                     }
                 }

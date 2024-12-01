@@ -2,7 +2,6 @@
     <string name="app_name">MasterMeme</string>
     <string name="my_memes_title">Your memes</string>
     <string name="my_memes_empty_state">Tap + button to create your first meme</string>
-
-
-
+    <string name="my_memes_bottom_sheet_title">Choose template</string>
+    <string name="my_memes_bottom_sheet_subtitle">Choose template for your next meme masterpiece</string>
 </resources>
