@@ -2,13 +2,19 @@ package stevens.software.mastermeme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
@@ -17,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -97,29 +105,10 @@ fun MyMemes() {
                     }
 
                     if(showBottomSheet) {
-                        ModalBottomSheet(
-                            onDismissRequest = { showBottomSheet = false },
-                            sheetState = bottomSheetState,
-                            containerColor = colorResource(R.color.dark_grey),
-                            ) {
-                            Text(
-                                text = stringResource(R.string.my_memes_bottom_sheet_title),
-                                fontSize = 16.sp,
-                                fontFamily = manropeFontFamily,
-                                fontWeight = FontWeight.SemiBold,
-                                color = colorResource(R.color.light_grey),
-                                modifier = Modifier.padding(top = 16.dp, start = 16.dp)
-                            )
-                            Text(
-                                text = stringResource(R.string.my_memes_bottom_sheet_subtitle),
-                                fontSize = 12.sp,
-                                fontFamily = manropeFontFamily,
-                                fontWeight = FontWeight.Normal,
-                                color = colorResource(R.color.light_grey),
-                                modifier = Modifier.padding(top = 16.dp, start = 16.dp)
-                            )
-                            Spacer(Modifier.size(42.dp))
-                        }
+                        BottomSheetModal(
+                            bottomSheetState = bottomSheetState,
+                            onShowBottomSheet = { showBottomSheet = it }
+                        )
                     }
                 }
             }
@@ -127,6 +116,58 @@ fun MyMemes() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetModal(bottomSheetState: SheetState,
+                     onShowBottomSheet: (Boolean) -> Unit){
+    ModalBottomSheet(
+        onDismissRequest = { onShowBottomSheet(false) },
+        sheetState = bottomSheetState,
+        containerColor = colorResource(R.color.dark_grey),
+    ) {
+        Text(
+            text = stringResource(R.string.my_memes_bottom_sheet_title),
+            fontSize = 16.sp,
+            fontFamily = manropeFontFamily,
+            fontWeight = FontWeight.SemiBold,
+            color = colorResource(R.color.light_grey),
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp)
+        )
+        Text(
+            text = stringResource(R.string.my_memes_bottom_sheet_subtitle),
+            fontSize = 12.sp,
+            fontFamily = manropeFontFamily,
+            fontWeight = FontWeight.Normal,
+            color = colorResource(R.color.light_grey),
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp)
+        )
+        Spacer(Modifier.size(42.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(176.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(memes) { drawable ->
+                Box(
+                    modifier = Modifier
+                        .height(176.dp)
+                        .background(Color.Black)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(drawable),
+//                        modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                        contentDescription = null,
+                    contentScale = ContentScale.Crop
+                    )
+                }
+
+            }
+        }
+    }
+}
 @Composable
 fun EmptyState(modifier: Modifier) {
     Box(
