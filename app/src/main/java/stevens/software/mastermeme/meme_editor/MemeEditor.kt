@@ -1,6 +1,7 @@
 package stevens.software.mastermeme.meme_editor
 
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,12 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,6 +42,8 @@ import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -57,7 +64,8 @@ fun MemeEditorScreen(viewModel: MemeEditorViewModel,
 
     MemeEditor(
         memeTemplate = uiState.value.memeTemplate,
-        navigateBack = onNavigateBack
+        navigateBack = onNavigateBack,
+        onSaveMeme = {}
     )
 }
 
@@ -65,7 +73,9 @@ fun MemeEditorScreen(viewModel: MemeEditorViewModel,
 @Composable
 fun MemeEditor(
     memeTemplate: Int,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    onSaveMeme: () -> Unit,
+    onAddText: () -> Unit
 ) {
     var openDialog by remember { mutableStateOf(false) }
 
@@ -92,16 +102,77 @@ fun MemeEditor(
                 .padding(contentPadding)
                 .fillMaxSize()
                 .background(colorResource(R.color.dark_black)),
-            contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(memeTemplate),
-                contentDescription = null,
-                modifier = Modifier
-                    .width(380.dp)
-                    .height(380.dp)
-                    .padding(horizontal = 16.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(memeTemplate),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(380.dp)
+                        .height(380.dp)
+                        .padding(horizontal = 16.dp)
+                        .weight(2f)
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(colorResource(R.color.dark_grey))
+                        .padding(16.dp)
+                ) {
+                    val brush = Brush.horizontalGradient(
+                        listOf(
+                            colorResource(R.color.light_purple),
+                            colorResource(R.color.dark_purple)
+                        )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+
+                        OutlinedButton(
+                            modifier = Modifier,
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, brush),
+                            onClick = { onAddText() }
+                        ) {
+                            Text(
+                                text = stringResource(R.string.add_text),
+                                fontFamily = manropeFontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
+                                color = colorResource(R.color.light_purple)
+                            )
+                        }
+
+                        Spacer(Modifier.size(18.dp))
+                        Box(modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(brush)
+                            .padding(horizontal = 16.dp)
+                            .padding(vertical = 10.dp)
+                            .clickable{
+                                onSaveMeme()
+                            }){
+                            Text(
+                                text = stringResource(R.string.save_meme),
+                                fontFamily = manropeFontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
+                                color = colorResource(R.color.very_dark_purple)
+                            )
+                        }
+
+                    }
+                }
+
+
+            }
+
         }
 
     }
@@ -206,9 +277,10 @@ fun LeaveEditorDialog(
 @Preview
 @Composable
 fun MemeEditorPreview(){
-    LeaveEditorDialog({}, {})
-//    MemeEditor(
-//        memeTemplate = R.drawable.disaster_girl,
-//        onBackClicked = {},
-//    )
+    MemeEditor(
+        memeTemplate = R.drawable.disaster_girl,
+        navigateBack = {},
+        onSaveMeme = {},
+        onAddText = {}
+    )
 }

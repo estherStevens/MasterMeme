@@ -9,6 +9,8 @@
     <string name="leave_meme_editor_dialog_subtitle">You will lose your precious meme. If you\'re fine with that, press ‘Leave’.</string>
     <string name="leave_meme_editor_dialog_leave_button">Leave</string>
     <string name="leave_meme_editor_dialog_cancel_button">Cancel</string>
+    <string name="save_meme">Save meme</string>
+    <string name="add_text">Add text</string>
 
 
 </resources>
