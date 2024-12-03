@@ -2,6 +2,7 @@ package stevens.software.mastermeme.memes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,17 +48,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import stevens.software.mastermeme.R
+import stevens.software.mastermeme.common.Header
 import stevens.software.mastermeme.manropeFontFamily
 import stevens.software.mastermeme.ui.theme.MasterMemeTheme
 
 @Composable
 fun MyMemesScreen(
-    viewModel: MyMemesViewModel = koinViewModel()){
+    viewModel: MyMemesViewModel = koinViewModel(),
+    onMemeSelected: (Int) -> Unit
+){
 
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
     MyMemes(
-        memeTemplates = uiState.value.memeTemplates
+        memeTemplates = uiState.value.memeTemplates,
+        onMemeSelected = onMemeSelected
     )
 }
 
@@ -65,26 +70,15 @@ fun MyMemesScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyMemes(
-    memeTemplates: List<Int>
+    memeTemplates: List<Int>,
+    onMemeSelected: (Int) -> Unit
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
-            TopAppBar(
-               title = {
-                   Text(
-                       text = stringResource(R.string.my_memes_title),
-                       color = colorResource(R.color.light_grey),
-                       fontSize = 24.sp,
-                       fontFamily = manropeFontFamily,
-                       fontWeight = FontWeight.Medium,
-                       modifier = Modifier.padding(16.dp)
-                   )
-               },
-                colors = TopAppBarDefaults.topAppBarColors().copy(
-                    containerColor = colorResource(R.color.dark_grey)
-                )
+            Header(
+                text =  stringResource(R.string.my_memes_title)
             )
         },
         content = { contentPadding ->
@@ -126,7 +120,8 @@ fun MyMemes(
                         BottomSheetModal(
                             bottomSheetState = bottomSheetState,
                             onShowBottomSheet = { showBottomSheet = it },
-                            memeTemplates = memeTemplates
+                            memeTemplates = memeTemplates,
+                            onMemeSelected = onMemeSelected
                         )
                     }
                 }
@@ -139,7 +134,8 @@ fun MyMemes(
 @Composable
 fun BottomSheetModal(bottomSheetState: SheetState,
                      onShowBottomSheet: (Boolean) -> Unit,
-                     memeTemplates: List<Int>){
+                     memeTemplates: List<Int>,
+                     onMemeSelected: (Int) -> Unit){
     ModalBottomSheet(
         onDismissRequest = { onShowBottomSheet(false) },
         sheetState = bottomSheetState,
@@ -174,7 +170,10 @@ fun BottomSheetModal(bottomSheetState: SheetState,
                     modifier = Modifier
                         .height(176.dp)
                         .background(Color.Black)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            onMemeSelected(drawable)
+                        },
                     contentAlignment = Alignment.Center) {
                     Image(
                         painter = painterResource(drawable),
@@ -220,7 +219,8 @@ fun EmptyState(modifier: Modifier) {
 fun MyMemesPreview() {
     MasterMemeTheme {
         MyMemes(
-            memeTemplates = listOf()
+            memeTemplates = listOf(),
+            onMemeSelected = {}
         )
     }
 }

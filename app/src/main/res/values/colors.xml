@@ -13,5 +13,8 @@
     <color name="grey">#79747E</color>
     <color name="light_purple">#EADDFF</color>
     <color name="dark_purple">#D0BCFE</color>
+    <color name="medium_grey">#211F26</color>
+    <color name="very_light_purple">#CCC2DC</color>
+
 
 </resources>

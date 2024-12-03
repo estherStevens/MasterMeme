@@ -4,4 +4,11 @@
     <string name="my_memes_empty_state">Tap + button to create your first meme</string>
     <string name="my_memes_bottom_sheet_title">Choose template</string>
     <string name="my_memes_bottom_sheet_subtitle">Choose template for your next meme masterpiece</string>
+    <string name="new_meme_title">New meme</string>
+    <string name="leave_meme_editor_dialog_title">Leave editor?</string>
+    <string name="leave_meme_editor_dialog_subtitle">You will lose your precious meme. If you\'re fine with that, press ‘Leave’.</string>
+    <string name="leave_meme_editor_dialog_leave_button">Leave</string>
+    <string name="leave_meme_editor_dialog_cancel_button">Cancel</string>
+
+
 </resources>
