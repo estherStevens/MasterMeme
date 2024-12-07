@@ -53,3 +53,7 @@ val manropeFontFamily = FontFamily(
     Font(resId = R.font.manrope_medium, weight = FontWeight.Medium),
     Font(resId = R.font.manrope_semibold, weight = FontWeight.SemiBold)
 )
+
+val impactFontFamily = FontFamily(
+    Font(resId = R.font.impact, weight = FontWeight.Normal)
+)

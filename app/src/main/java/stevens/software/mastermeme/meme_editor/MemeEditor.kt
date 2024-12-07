@@ -1,6 +1,11 @@
 package stevens.software.mastermeme.meme_editor
 
+import android.R.attr.textSize
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Typeface
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.animation.core.copy
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,10 +33,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -43,19 +51,67 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.size
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import stevens.software.mastermeme.common.Header
 import stevens.software.mastermeme.R
+import stevens.software.mastermeme.impactFontFamily
 import stevens.software.mastermeme.manropeFontFamily
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.toSize
+import androidx.core.content.res.ResourcesCompat
+//import fontResource
+//import fontFamily
+import kotlin.div
 
 @Composable
 fun MemeEditorScreen(viewModel: MemeEditorViewModel,
@@ -64,8 +120,12 @@ fun MemeEditorScreen(viewModel: MemeEditorViewModel,
 
     MemeEditor(
         memeTemplate = uiState.value.memeTemplate,
+        textBox = uiState.value.textBox,
         navigateBack = onNavigateBack,
-        onSaveMeme = {}
+        onSaveMeme = {},
+        onAddText = {
+            viewModel.addTextBox()
+        }
     )
 }
 
@@ -73,6 +133,7 @@ fun MemeEditorScreen(viewModel: MemeEditorViewModel,
 @Composable
 fun MemeEditor(
     memeTemplate: Int,
+    textBox: TextBox?,
     navigateBack: () -> Unit,
     onSaveMeme: () -> Unit,
     onAddText: () -> Unit
@@ -106,15 +167,35 @@ fun MemeEditor(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(memeTemplate),
-                    contentDescription = null,
+
+                Box(
                     modifier = Modifier
-                        .width(380.dp)
+                        .fillMaxWidth()
                         .height(380.dp)
                         .padding(horizontal = 16.dp)
-                        .weight(2f)
-                )
+                        .weight(2f),
+                    contentAlignment = Alignment.Center
+                ){
+
+
+                    Image(
+                        painter = painterResource(memeTemplate),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(380.dp)
+                            .padding(horizontal = 16.dp)
+//                            .weight(2f)
+                    )
+
+                    if(textBox?.text != null) {
+                        val memeText : String = textBox?.text ?: ""
+                        CanvasText(memeText)
+
+                    }
+
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -155,7 +236,7 @@ fun MemeEditor(
                             .background(brush)
                             .padding(horizontal = 16.dp)
                             .padding(vertical = 10.dp)
-                            .clickable{
+                            .clickable {
                                 onSaveMeme()
                             }){
                             Text(
@@ -251,27 +332,6 @@ fun LeaveEditorDialog(
             }
         }
     }
-//    BasicAlertDialog(
-//        onDismissRequest = {},
-//    ){
-//        Column {
-//            Text(
-//                text = stringResource(R.string.leave_meme_editor_dialog_title),
-//                color = colorResource(R.color.light_grey),
-//                fontSize = 24.sp,
-//                fontFamily = manropeFontFamily,
-//                fontWeight = FontWeight.Medium
-//            )
-//            Spacer(Modifier.size(20.dp))
-//            Text(
-//                text = stringResource(R.string.leave_meme_editor_dialog_subtitle),
-//                color = colorResource(R.color.light_grey),
-//                fontSize = 16.sp,
-//                fontFamily = manropeFontFamily,
-//                fontWeight = FontWeight.Normal)
-//        }
-//
-//    }
 }
 
 @Preview
@@ -281,6 +341,149 @@ fun MemeEditorPreview(){
         memeTemplate = R.drawable.disaster_girl,
         navigateBack = {},
         onSaveMeme = {},
-        onAddText = {}
+        onAddText = {},
+        textBox = TextBox(text = "Double tap to edit")
     )
 }
+
+@Composable
+fun CanvasText(text: String){
+    val memeText = text
+    val impactTypeface = ResourcesCompat.getFont(LocalContext.current, R.font.impact)
+
+    val boxRadius = with(LocalDensity.current) { 4.dp.toPx() }
+    val fontSize = with(LocalDensity.current) { 35.sp.toPx() }
+    val close = with(LocalDensity.current) { 10.dp.toPx() }
+
+    val textPaintStroke = Paint().apply {
+        isAntiAlias = true
+        style = android.graphics.Paint.Style.STROKE
+        textSize = fontSize
+        color = android.graphics.Color.BLACK
+        strokeWidth = 12f
+        typeface = impactTypeface
+    }
+
+    val textPaint = Paint().apply {
+        isAntiAlias = true
+        style = android.graphics.Paint.Style.FILL
+        textSize = fontSize
+        color = android.graphics.Color.WHITE
+        typeface = impactTypeface
+    }
+
+    val boxPaint = android.graphics.Paint().apply {
+        color = Color.White.toArgb()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 2f
+
+    }
+
+    val linePaint = android.graphics.Paint().apply {
+        color = Color.White.toArgb()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 4f
+
+    }
+    val colour = colorResource(R.color.red)
+
+    val closeButton = android.graphics.Paint().apply {
+        color = colour.toArgb()
+        style = android.graphics.Paint.Style.FILL
+    }
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth(),
+        onDraw = {
+            drawIntoCanvas {
+                val textBounds = android.graphics.Rect()
+                textPaint.getTextBounds(memeText, 0, memeText.length, textBounds)
+
+                val boxLeft = 0f
+                val boxTop = 0f
+                val boxRight = boxLeft + textBounds.width() + 70f
+                val boxBottom = boxTop + textBounds.height() + 70f
+
+                it.nativeCanvas.drawRoundRect(
+                    boxLeft,
+                    boxTop,
+                    boxRight,
+                    boxBottom,
+                    boxRadius,
+                    boxRadius,
+                    boxPaint
+                )
+
+
+                it.nativeCanvas.drawCircle(
+                    boxRight,
+                    boxTop,
+                    close,
+                    closeButton
+                )
+
+                val centerX = boxRight
+                val centerY = boxTop
+                val radius = close
+                val startX = centerX - radius / 2
+                val startY = centerY + radius / 2
+                val endX = centerX + radius / 2
+                val endY = centerY - radius / 2
+
+                it.nativeCanvas.drawLine(
+                    startX,
+                    startY,
+                    endX,
+                    endY,
+                    linePaint
+                )
+
+                it.nativeCanvas.drawLine(
+                    centerX + radius / 2,
+                    centerY + radius / 2,
+                    centerX - radius / 2,
+                    centerY - radius / 2,
+                    linePaint
+                )
+
+                it.nativeCanvas.drawText(
+                    memeText,
+                    boxLeft + 35f,
+                    boxTop + textBounds.height() + 35f,
+                    textPaintStroke
+                )
+                it.nativeCanvas.drawText(
+                    memeText,
+                    boxLeft + 35f,
+                    boxTop + textBounds.height() + 35f,
+                    textPaint
+                )
+
+
+            }
+        }
+    )
+}
+
+
+    /*Canvas(
+        modifier = Modifier
+            .fillMaxWidth(),
+        onDraw = {
+            drawIntoCanvas {
+                it.nativeCanvas.drawText(
+                    memeText,
+                    0f,
+                    120.dp.toPx(),
+                    textPaintStroke
+                )
+                it.nativeCanvas.drawText(
+                    memeText,
+                    0f,
+                    120.dp.toPx(),
+                    textPaint
+                )
+            }
+        }
+    )*/
