@@ -83,6 +83,8 @@ import stevens.software.mastermeme.impactFontFamily
 import stevens.software.mastermeme.manropeFontFamily
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
@@ -98,6 +100,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -112,11 +115,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.toSize
 import androidx.core.content.res.ResourcesCompat
 //import fontResource
 //import fontFamily
 import kotlin.div
+import kotlin.math.roundToInt
 
 @Composable
 fun MemeEditorScreen(
@@ -214,83 +219,13 @@ fun MemeEditor(
                     if (textBox?.text != null) {
                         val memeText: String = textBox.text
                         /*CanvasText(memeText)*/
-                        val style = TextStyle(
-                            fontFamily = impactFontFamily,
-                            fontSize = 40.sp,
-                            color = Color.White
+
+                        MemeText(
+                            memeText = memeText,
+                            onTextClickedTwice = {
+                                openEditTextDialog = true
+                            }
                         )
-
-
-                        var count = 0
-                        Box(
-                            modifier = Modifier
-                                .border(
-                                    border = BorderStroke(1.dp, Color.White),
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 10.dp)
-                                .clickable{
-                                    count = count + 1
-                                    if(count == 2) {
-                                        openEditTextDialog = true
-                                    }
-                                }
-                        ) {
-                            Text(
-                                text = textBox.text,
-                                style = style,
-                            )
-
-                            Text(
-                                text = textBox.text,
-                                color = Color.Black,
-                                textDecoration = null,
-                                style = style.copy(
-                                    shadow = null,
-                                    drawStyle = Stroke(width = 3f),
-                                ),
-                            )
-                        }
-
-
-//                        Box(modifier = Modifier
-//                            .border(
-//                                border = BorderStroke(1.dp, Color.White),
-//                                shape = RoundedCornerShape(4.dp)
-//                            )
-//                        ) {
-//
-//                            Text(
-//                                text = textBox.text,
-//                                style = style,
-//                            )
-//
-//                            Text(
-//                                text = textBox.text,
-//                                color = Color.Black,
-//                                textDecoration = null,
-//                                style = style.copy(
-//                                    shadow = null,
-//                                    drawStyle = Stroke(width = 3f),
-//                                ),
-//                            )
-//                        }
-
-//                        OutlinedTextField(
-//                            value = memeText,
-//                            onValueChange = {},
-//                            textStyle = TextStyle(
-//                                fontFamily = impactFontFamily,
-//                                fontSize = 40.sp,
-//                                color = Color.White
-//                            ),
-//                            shape = RoundedCornerShape(6.dp),
-//                            colors = OutlinedTextFieldDefaults.colors(
-//                                focusedBorderColor = Color.White,
-//                                unfocusedBorderColor = Color.White
-//                            )
-//                        )
-
                     }
 
                 }
@@ -537,6 +472,66 @@ fun MemeEditorPreview() {
         textBox = TextBox(text = "Double tap to edit"),
         onEditText = {}
     )
+}
+
+@Composable
+fun MemeText(
+    memeText: String,
+    onTextClickedTwice: () -> Unit
+){
+    var count = 0
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+
+    val style = TextStyle(
+        fontFamily = impactFontFamily,
+        fontSize = 40.sp,
+        color = Color.White
+    )
+
+    Box(modifier = Modifier
+        .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+        .pointerInput(Unit) {
+            detectDragGestures { change, dragAmount ->
+                change.consume()
+                offsetX += dragAmount.x
+                offsetY += dragAmount.y
+            }
+        }
+
+    ) {
+        Box(
+            modifier = Modifier
+                .border(
+                    border = BorderStroke(1.dp, Color.White),
+                    shape = RoundedCornerShape(4.dp)
+                )
+                .padding(horizontal = 10.dp)
+                .clickable{
+                    count = count + 1
+                    if(count == 2) {
+                        onTextClickedTwice()
+                    }
+                }
+        ) {
+            Text(
+                text = memeText,
+                style = style,
+            )
+
+            Text(
+                text = memeText,
+                color = Color.Black,
+                textDecoration = null,
+                style = style.copy(
+                    shadow = null,
+                    drawStyle = Stroke(width = 3f),
+                ),
+            )
+        }
+    }
+
+
 }
 
 @Composable
