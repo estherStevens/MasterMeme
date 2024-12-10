@@ -461,18 +461,18 @@ fun EditTextDialog(
 
 
 
-@Preview
-@Composable
-fun MemeEditorPreview() {
-    MemeEditor(
-        memeTemplate = R.drawable.disaster_girl,
-        navigateBack = {},
-        onSaveMeme = {},
-        onAddText = {},
-        textBox = TextBox(text = "Double tap to edit"),
-        onEditText = {}
-    )
-}
+//@Preview
+//@Composable
+//fun MemeEditorPreview() {
+//    MemeEditor(
+//        memeTemplate = R.drawable.disaster_girl,
+//        navigateBack = {},
+//        onSaveMeme = {},
+//        onAddText = {},
+//        textBox = TextBox(text = "Double tap to edit"),
+//        onEditText = {}
+//    )
+//}
 
 @Composable
 fun MemeText(
