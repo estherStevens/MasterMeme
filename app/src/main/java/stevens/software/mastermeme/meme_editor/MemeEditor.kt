@@ -83,8 +83,13 @@ import stevens.software.mastermeme.impactFontFamily
 import stevens.software.mastermeme.manropeFontFamily
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
@@ -114,8 +119,10 @@ import androidx.core.content.res.ResourcesCompat
 import kotlin.div
 
 @Composable
-fun MemeEditorScreen(viewModel: MemeEditorViewModel,
-                     onNavigateBack: () -> Unit){
+fun MemeEditorScreen(
+    viewModel: MemeEditorViewModel,
+    onNavigateBack: () -> Unit
+) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
     MemeEditor(
@@ -125,6 +132,9 @@ fun MemeEditorScreen(viewModel: MemeEditorViewModel,
         onSaveMeme = {},
         onAddText = {
             viewModel.addTextBox()
+        },
+        onEditText = {
+            viewModel.editText(it)
         }
     )
 }
@@ -136,14 +146,27 @@ fun MemeEditor(
     textBox: TextBox?,
     navigateBack: () -> Unit,
     onSaveMeme: () -> Unit,
-    onAddText: () -> Unit
+    onAddText: () -> Unit, 
+    onEditText: (String) -> Unit
 ) {
-    var openDialog by remember { mutableStateOf(false) }
+    var openLeaveDialog by remember { mutableStateOf(false) }
+    var openEditTextDialog by remember { mutableStateOf(false) }
 
-    if(openDialog) {
+    if (openLeaveDialog) {
         LeaveEditorDialog(
-            onDismissDialog = { openDialog = false },
+            onDismissDialog = { openLeaveDialog = false },
             onLeaveClicked = navigateBack
+        )
+    }
+
+    if (openEditTextDialog) {
+        EditTextDialog(
+            text = textBox?.text ?: "",
+            onDismissDialog = { openEditTextDialog = false },
+            onOkayClicked = {
+                openEditTextDialog = false
+                onEditText(it)
+            }
         )
     }
     Scaffold(
@@ -152,7 +175,7 @@ fun MemeEditor(
                 text = stringResource(R.string.new_meme_title),
                 backButton = {
                     BackButton(onBackClicked = {
-                        openDialog = true
+                        openLeaveDialog = true
                     })
                 }
             )
@@ -175,7 +198,7 @@ fun MemeEditor(
                         .padding(horizontal = 16.dp)
                         .weight(2f),
                     contentAlignment = Alignment.Center
-                ){
+                ) {
 
 
                     Image(
@@ -188,9 +211,85 @@ fun MemeEditor(
 //                            .weight(2f)
                     )
 
-                    if(textBox?.text != null) {
-                        val memeText : String = textBox?.text ?: ""
-                        CanvasText(memeText)
+                    if (textBox?.text != null) {
+                        val memeText: String = textBox.text
+                        /*CanvasText(memeText)*/
+                        val style = TextStyle(
+                            fontFamily = impactFontFamily,
+                            fontSize = 40.sp,
+                            color = Color.White
+                        )
+
+
+                        var count = 0
+                        Box(
+                            modifier = Modifier
+                                .border(
+                                    border = BorderStroke(1.dp, Color.White),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 10.dp)
+                                .clickable{
+                                    count = count + 1
+                                    if(count == 2) {
+                                        openEditTextDialog = true
+                                    }
+                                }
+                        ) {
+                            Text(
+                                text = textBox.text,
+                                style = style,
+                            )
+
+                            Text(
+                                text = textBox.text,
+                                color = Color.Black,
+                                textDecoration = null,
+                                style = style.copy(
+                                    shadow = null,
+                                    drawStyle = Stroke(width = 3f),
+                                ),
+                            )
+                        }
+
+
+//                        Box(modifier = Modifier
+//                            .border(
+//                                border = BorderStroke(1.dp, Color.White),
+//                                shape = RoundedCornerShape(4.dp)
+//                            )
+//                        ) {
+//
+//                            Text(
+//                                text = textBox.text,
+//                                style = style,
+//                            )
+//
+//                            Text(
+//                                text = textBox.text,
+//                                color = Color.Black,
+//                                textDecoration = null,
+//                                style = style.copy(
+//                                    shadow = null,
+//                                    drawStyle = Stroke(width = 3f),
+//                                ),
+//                            )
+//                        }
+
+//                        OutlinedTextField(
+//                            value = memeText,
+//                            onValueChange = {},
+//                            textStyle = TextStyle(
+//                                fontFamily = impactFontFamily,
+//                                fontSize = 40.sp,
+//                                color = Color.White
+//                            ),
+//                            shape = RoundedCornerShape(6.dp),
+//                            colors = OutlinedTextFieldDefaults.colors(
+//                                focusedBorderColor = Color.White,
+//                                unfocusedBorderColor = Color.White
+//                            )
+//                        )
 
                     }
 
@@ -213,7 +312,7 @@ fun MemeEditor(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
-                    ){
+                    ) {
 
                         OutlinedButton(
                             modifier = Modifier,
@@ -238,7 +337,7 @@ fun MemeEditor(
                             .padding(vertical = 10.dp)
                             .clickable {
                                 onSaveMeme()
-                            }){
+                            }) {
                             Text(
                                 text = stringResource(R.string.save_meme),
                                 fontFamily = manropeFontFamily,
@@ -303,10 +402,13 @@ fun LeaveEditorDialog(
                     color = colorResource(R.color.light_grey),
                     fontSize = 16.sp,
                     fontFamily = manropeFontFamily,
-                    fontWeight = FontWeight.Normal)
+                    fontWeight = FontWeight.Normal
+                )
                 Spacer(modifier = Modifier.height(24.dp))
-                Row(horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     TextButton(
                         onClick = onDismissDialog,
                     ) {
@@ -334,20 +436,111 @@ fun LeaveEditorDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTextDialog(
+    text: String,
+    onDismissDialog: () -> Unit,
+    onOkayClicked: (String) -> Unit,
+) {
+    var memeText by remember {
+        mutableStateOf(text)
+    }
+    BasicAlertDialog(
+        onDismissRequest = {
+            onDismissDialog()
+        }
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            color = colorResource(R.color.medium_grey)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.edit_text_dialog_title),
+                    color = colorResource(R.color.light_grey),
+                    fontSize = 24.sp,
+                    fontFamily = manropeFontFamily,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(Modifier.size(20.dp))
+
+                TextField(
+                    value = memeText,
+                    onValueChange = {
+                        memeText = it
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = colorResource(R.color.light_purple),
+                        unfocusedIndicatorColor = colorResource(R.color.light_purple)
+
+                    ),
+                    textStyle = TextStyle.Default.copy(
+                        color = colorResource(R.color.white),
+                        fontFamily = manropeFontFamily,
+                        fontSize = 14.sp
+                    )
+                )
+
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButton(
+                        onClick = onDismissDialog,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.edit_text_dialog_cancel),
+                            color = colorResource(R.color.very_light_purple),
+                            fontFamily = manropeFontFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            onOkayClicked(memeText)
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(R.string.edit_text_dialog_ok),
+                            color = colorResource(R.color.very_light_purple),
+                            fontFamily = manropeFontFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+
+
+
 @Preview
 @Composable
-fun MemeEditorPreview(){
+fun MemeEditorPreview() {
     MemeEditor(
         memeTemplate = R.drawable.disaster_girl,
         navigateBack = {},
         onSaveMeme = {},
         onAddText = {},
-        textBox = TextBox(text = "Double tap to edit")
+        textBox = TextBox(text = "Double tap to edit"),
+        onEditText = {}
     )
 }
 
 @Composable
-fun CanvasText(text: String){
+fun CanvasText(text: String) {
     val memeText = text
     val impactTypeface = ResourcesCompat.getFont(LocalContext.current, R.font.impact)
 
@@ -467,23 +660,23 @@ fun CanvasText(text: String){
 }
 
 
-    /*Canvas(
-        modifier = Modifier
-            .fillMaxWidth(),
-        onDraw = {
-            drawIntoCanvas {
-                it.nativeCanvas.drawText(
-                    memeText,
-                    0f,
-                    120.dp.toPx(),
-                    textPaintStroke
-                )
-                it.nativeCanvas.drawText(
-                    memeText,
-                    0f,
-                    120.dp.toPx(),
-                    textPaint
-                )
-            }
+/*Canvas(
+    modifier = Modifier
+        .fillMaxWidth(),
+    onDraw = {
+        drawIntoCanvas {
+            it.nativeCanvas.drawText(
+                memeText,
+                0f,
+                120.dp.toPx(),
+                textPaintStroke
+            )
+            it.nativeCanvas.drawText(
+                memeText,
+                0f,
+                120.dp.toPx(),
+                textPaint
+            )
         }
-    )*/
+    }
+)*/

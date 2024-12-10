@@ -30,12 +30,17 @@ class MemeEditorViewModel : ViewModel() {
                 it.copy(
                     textBox = TextBox("Tap Twice to Edit")
                 )
-
-
             }
+        }
+    }
 
-           val i =  _uiState.value.textBox
-            val o = i
+    fun editText(newMemeText: String){
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    textBox = TextBox(newMemeText)
+                )
+            }
         }
     }
 }

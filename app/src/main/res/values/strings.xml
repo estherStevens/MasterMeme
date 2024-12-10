@@ -11,6 +11,12 @@
     <string name="leave_meme_editor_dialog_cancel_button">Cancel</string>
     <string name="save_meme">Save meme</string>
     <string name="add_text">Add text</string>
+    <string name="edit_text_dialog_title">Text</string>
+    <string name="edit_text_dialog_ok">Ok</string>
+    <string name="edit_text_dialog_cancel">Cancel</string>
+
+
+
 
 
 </resources>
